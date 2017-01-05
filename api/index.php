@@ -50,10 +50,10 @@ switch ($verb) {
         getBehaviour();
         break;
     case "POST":
-        postBehaviour();
+        postBehaviour($class);
         break;
     case "PUT" || "PATCH":
-        postBehaviour();
+        postBehaviour($class);
         break;
     case "DELETE":
         getBehaviour();
@@ -64,7 +64,7 @@ switch ($verb) {
         die(json_encode($response, JSON_UNESCAPED_UNICODE));
 }
 
-function postBehaviour(){
+function postBehaviour($class){
     $postData = json_decode(file_get_contents("php://input"), true);
     if(isset($postData["action"])){
         //TODO: Call the method

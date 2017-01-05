@@ -7,6 +7,7 @@
     <body>
         <?php
             echo $_GET["id"];
+            echo $_POST["oi"];
         ?>
     </body>
 </html>

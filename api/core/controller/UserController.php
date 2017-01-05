@@ -1,25 +1,30 @@
 <?php
 
 /**
- * Created by PhpStorm.
- * User: vellames
- * Date: 04/01/17
- * Time: 22:56
+ * This class contain business rule of User
+ * @author Cassiano Vellames <c.vellames@outlook.com>
+ * @since 1.0.0
  */
 class UserController extends Controller {
-
+    
+    /**
+     * The parent construct initialize the $response variable
+     */
     function __construct(){
         parent::__construct();
     }
 
     public function getRequisition($id = null): Response{
-        $this->response->setMessage("oi");
-        $this->response->setStatus("ola");
         return $this->response;
     }
-
+    
+    /**
+     * The post requisition add an user to database
+     * THe field "Created" and "Modified" are generated in the method
+     * @param type $postData Data sended from the endpoint
+     * @return \Response Object with the Response information
+     */
     public function postRequisition($postData): Response{
-
         $actualDateTime = new DateTime();
         $userBean = new UserBean(
             $postData["name"],
@@ -44,21 +49,15 @@ class UserController extends Controller {
                "error" => $result
             ]);
         }
-
+        
         return $this->response;
     }
 
-    public function putRequisition($putData): Response
-    {
-        $this->response->setMessage("oi");
-        $this->response->setStatus("ola");
+    public function putRequisition($putData): Response {
         return $this->response;
     }
 
-    public function deleteRequisition($id): Response
-    {
-        $this->response->setMessage("oi");
-        $this->response->setStatus("ola");
+    public function deleteRequisition($id): Response {
         return $this->response;
     }
 }

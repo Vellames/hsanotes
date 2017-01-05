@@ -6,7 +6,7 @@ class UserDAO extends DAO {
     private $tableName = "user";
 
     /**
-     * UserDAO constructor.
+     * The parent construct initialize the $response variable
      */
     function __construct(){
         parent::__construct();
@@ -45,7 +45,7 @@ class UserDAO extends DAO {
         $stmt->bindValue(4, $object->getCreated()->format("Y-m-d H:i:s"), PDO::PARAM_STR);
         $stmt->bindValue(5, $object->getModified()->format("Y-m-d H:i:s"), PDO::PARAM_STR);
         $stmt->execute();
-
+        
         return ($stmt->errorCode() > 0 ? ($stmt->errorCode() * - 1) : DbConnection::getInstance()->lastInsertId());
     }
 

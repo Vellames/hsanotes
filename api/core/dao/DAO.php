@@ -22,7 +22,7 @@ abstract class DAO {
      * DAO constructor.
      * Initialize the $response object
      */
-    function __construct(){
+    protected function __construct(){
         $this->response = new Response();
     }
 

@@ -86,7 +86,6 @@ final class UserBean implements IBean, JsonSerializable{
             "id" => $this->id,
             "name" => $this->name,
             "email" => $this->email,
-            "password" => $this->password,
             "created" => $this->created->format("Y-m-d H:i:s"),
             "modified" => $this->modified->format("Y-m-d H:i:s")
         ];

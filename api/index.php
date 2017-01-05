@@ -8,6 +8,7 @@
  */
 
 // Load class
+//TODO: use spl autoload
 error_reporting(E_ERROR | E_PARSE);
 function __autoload($class){
     include_once "core/utils/{$class}.php";
@@ -46,34 +47,16 @@ if(!class_exists($className)){
 $class = new $className;
 switch ($verb) {
     case "GET":
-        if(isset($_GET["action"])){
-            //TODO: Call the method
-        } else {
-            //TODO: Call the restful method
-        }
+        getBehaviour();
         break;
     case "POST":
-        $postData = json_decode(file_get_contents("php://input"), true);
-        if(isset($postData["action"])){
-            //TODO: Call the method
-        } else {
-            echo json_encode($class->postRequisition($postData), JSON_UNESCAPED_UNICODE);
-        }
+        postBehaviour();
         break;
     case "PUT" || "PATCH":
-        $postData = json_decode(file_get_contents("php://input"), true);
-        if(isset($postData["action"])){
-            //TODO: Call the method
-        } else {
-            //TODO: Call the restful method
-        }
+        postBehaviour();
         break;
     case "DELETE":
-         if(isset($_GET["action"])){
-            //TODO: Call the method
-        } else {
-            //TODO: Call the restful method
-        }
+        getBehaviour();
         break;
     default:
         $response->setStatus(ResponseStatus::FAILED_STATUS);
@@ -81,3 +64,19 @@ switch ($verb) {
         die(json_encode($response, JSON_UNESCAPED_UNICODE));
 }
 
+function postBehaviour(){
+    $postData = json_decode(file_get_contents("php://input"), true);
+    if(isset($postData["action"])){
+        //TODO: Call the method
+    } else {
+        echo json_encode($class->postRequisition($postData), JSON_UNESCAPED_UNICODE);
+    }
+}
+
+function getBehaviour(){
+    if(isset($_GET["action"])){
+        //TODO: Call the method
+    } else {
+        //TODO: Call the restful method
+    }
+}

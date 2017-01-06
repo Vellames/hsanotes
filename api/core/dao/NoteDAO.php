@@ -51,7 +51,7 @@ class NoteDAO extends DAO{
                 DbConnection::ERROR_INFO_MSG_INDEX
             );
         }
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return PDOSelectResult::returnArray($stmt->execute(), $stmt);
     }
 
     /**

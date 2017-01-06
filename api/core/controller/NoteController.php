@@ -68,11 +68,25 @@ class NoteController extends Controller{
         
         return $this->response;
     }
-
+    
+    /**
+     * Update a note in database
+     * @param type $putData 
+     */
     public function putRequisition($putData): Response {
-        $this->response->setStatus(ResponseStatus::SUCCEEDED_STATUS);
-        $this->response->setMessage("oioi");
-        return $this->response;
+       
+        //Verify if note exists
+        $resultNote = NoteDAO::getInstance()->selectById($putData["id"]);
+        var_dump($resultNote);
+        
+        // Catch any errors in result
+        if(!$resultNote[PDOSelectResult::EXECUTED_INDEX]){
+            return $this->response->defaultSelectResultErrorResponse($resultNote);
+        }
+        
+        
+        
+        
     }
 
 }

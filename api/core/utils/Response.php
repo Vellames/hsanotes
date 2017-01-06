@@ -37,6 +37,16 @@ final class Response implements JsonSerializable{
         $this->data = $data;
     }
     
+    public function defaultSelectResultErrorResponse($result) : Response{
+        $this->setStatus(ResponseStatus::FAILED_STATUS);
+        $this->setMessage("Error in select step. Contact the administrator for more informations");
+        $this->setData(PDOErrorInfo::returnError(
+            $result[PDOSelectResult::RESULT_INDEX][DbConnection::ERROR_INFO_CODE_INDEX],
+            $result[PDOSelectResult::RESULT_INDEX][DbConnection::ERROR_INFO_MSG_INDEX]
+        ));
+        return $this;
+    }
+    
     /**
      * Encoded object 
      */

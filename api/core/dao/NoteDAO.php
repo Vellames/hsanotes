@@ -36,7 +36,7 @@ class NoteDAO extends DAO{
     }
 
     /**
-     * Load all note of an user
+     * Load note by id
      * @param null | int $id Id of note
      *
      * @return array Return a array with the result information

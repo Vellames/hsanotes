@@ -22,7 +22,7 @@ final class AuthBean implements IBean, JsonSerializable {
      */
     private $expiration;
 
-    public function __construct(UserBean $user, string $code, DateTime $expiration){
+    public function __construct(UserBean $user = null, string $code = null , DateTime $expiration = null){
         $this->user = $user;
         $this->code = $code;
         $this->expiration = $expiration;

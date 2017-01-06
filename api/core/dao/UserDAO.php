@@ -32,18 +32,22 @@ class UserDAO extends DAO {
     }
 
     /**
-     * This method is called when a get requisition is received. Select the register by id column
+     * Load an user
      * @param int $id Id of object
      *
      * @return array Return a array with the result information
      */
     public function selectById(int $id): array{
-
+         $sql = "SELECT id, name, email, created, modified from {$this->tableName} where id = ?";
+         $stmt = DbConnection::getInstance()->prepare($sql);
+         $stmt->bindValue(1, $id , PDO::PARAM_INT);
+         return PDOSelectResult::returnArray($stmt->execute(), $stmt);
+         
     }
 
     /**
      * Insert an user in database
-     * @param IBean $object Object with the data of new user
+     * @param UserBean $object Object with the data of new user
      * @return array If the user are inserted, return the Id of user.  If not, return the error code * -1;
      */
     public function insert($object): array{
@@ -59,8 +63,23 @@ class UserDAO extends DAO {
         return $stmt->errorInfo();
     }
 
+    /**
+     * Update an user in database
+     * @param UserBean $object to update
+     * @return array Return the result of update action
+     */
     public function update(IBean $object): array{
-
+        
+        $sql = "UPDATE {$this->tableName} SET name = ?, email = ? , password = ? , modified = ? where id = ?";
+        $stmt = DbConnection::getInstance()->prepare($sql);
+        $stmt->bindValue(1, $object->getName(), PDO::PARAM_STR);
+        $stmt->bindValue(2, $object->getEmail(), PDO::PARAM_STR);
+        $stmt->bindValue(3, $object->getPassword(), PDO::PARAM_STR);
+        $stmt->bindValue(4, $object->getModified()->format("Y-m-d H:i:s"), PDO::PARAM_STR);
+        $stmt->bindValue(5, $object->getId(), PDO::PARAM_STR);
+        $stmt->execute();
+        
+        return $stmt->errorInfo();
     }
 
     public function deleteById(int $id): array{

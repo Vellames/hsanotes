@@ -36,14 +36,16 @@ class AuthDAO extends DAO {
     }
 
     /**
-     * This method is called when a get requisition is received. Select the register by id column
-     * @param int $id Id of object
+     * Select the authorization information of an user
+     * @param int $id Id of user
      *
      * @return array Return a array with the result information
      */
-    public function selectById(int $id): array
-    {
-        // TODO: Implement select() method.
+    public function selectById(int $id): array{
+        $sql = "SELECT * FROM {$this->tableName} where user_id = ?";
+        $stmt = DbConnection::getInstance()->prepare($sql);
+        $stmt->bindValue(1, $id, PDO::PARAM_INT);
+        return PDOSelectResult::returnArray($stmt->execute(), $stmt);
     }
 
     /**
@@ -57,7 +59,7 @@ class AuthDAO extends DAO {
         $sql = "INSERT INTO {$this->tableName} (user_id, code, expiration) VALUES (?,?,?)";
         $stmt = DbConnection::getInstance()->prepare($sql);
         $stmt->bindValue(1, $object, PDO::PARAM_INT);
-        $stmt->bindValue(2, ApplicationSecurity::generateAuthHash(), PDO::PARAM_STR);
+        $stmt->bindValue(2, ApplicationSecurity::generateAuthHash($object), PDO::PARAM_STR);
         $stmt->bindValue(3, $dateTime, PDO::PARAM_STR);
         $stmt->execute();
 
@@ -65,20 +67,20 @@ class AuthDAO extends DAO {
     }
 
     /**
-     * This method must update an IBean in database
-     * @param IBean $object Object to update in database
+     * Actualize the user token
+     * @param AuthBean $object Object to update in database
      *
      * @return array Return an array with the result information
      */
     public function update(IBean $object): array{
 
-        $sql = "UPDATE {$this->tableName} set code = ? and expiration = ? where user_id = ?";
+        $sql = "UPDATE {$this->tableName} set code = ?, expiration = ? where user_id = ?";
         $stmt = DbConnection::getInstance()->prepare($sql);
         $stmt->bindValue(1, $object->getCode() , PDO::PARAM_STR);
         $stmt->bindValue(2, $object->getExpiration()->format("Y-m-d H:i:s"), PDO::PARAM_STR);
         $stmt->bindValue(3, $object->getUser()->getId(), PDO::PARAM_INT);
         $stmt->execute();
-        var_dump($stmt->errorInfo());
+        
         return $stmt->errorInfo();
     }
 

@@ -25,10 +25,47 @@ class NoteController extends Controller{
         $this->response->setMessage("oioi");
         return $this->response;
     }
-
+    
+    /**
+     * Add a new note in database
+     * @param type $postData Params sended by the endpoint
+     * @return Response Return one response with the status of solicitation
+     */
     public function postRequisition($postData): Response {
-        $this->response->setStatus(ResponseStatus::SUCCEEDED_STATUS);
-        $this->response->setMessage("oioiee");
+        
+        $userBean = new UserBean($postData["user_id"]);
+        $noteBean = new NoteBean(
+                NULL,
+                $userBean,
+                $postData["title"],
+                $postData["description"],
+                new DateTime(),
+                new DateTime()
+        );
+        
+        $insertResult = NoteDAO::getInstance()->insert($noteBean);
+        
+         // If user arent inserted, rollback the transcation
+        if($insertResult[DbConnection::ERROR_INFO_CODE_INDEX] != DbConnection::PDO_SUCCESS_RETURN){
+            $this->response->setStatus(ResponseStatus::FAILED_STATUS);
+            $this->response->setMessage("Error to insert user");
+            $this->response->setData(PDOErrorInfo::returnError(
+                $insertResult[DbConnection::ERROR_INFO_CODE_INDEX],
+                $insertResult[DbConnection::ERROR_INFO_MSG_INDEX]
+            ));
+        } else {
+            
+            $noteBean->setId(DbConnection::getInstance()->lastInsertId());
+            $token = (new UserController)->renewAuthToken($userBean);
+            
+            $this->response->setStatus(ResponseStatus::SUCCEEDED_STATUS);
+            $this->response->setMessage("Note inserted with success");
+            $this->response->setData(array(
+               "note"  => $noteBean,
+               "token" => $token
+            ));
+        }
+        
         return $this->response;
     }
 

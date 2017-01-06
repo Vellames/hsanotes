@@ -9,6 +9,8 @@ class DbConnection {
 
     const ERROR_INFO_CODE_INDEX = 0;
     const ERROR_INFO_MSG_INDEX = 2;
+    
+    const PDO_SUCCESS_RETURN = 0;
 
     private static $instance;
     private static $config = [

@@ -36,20 +36,20 @@ final class NoteBean implements IBean, JsonSerializable {
      */
     private $modified;
 
-    public function __construct(UserBean $user, string $title, string $description, DateTime $created, DateTime $modified, int $id = null){
-        $this->user = $this->setUser($user);
-        $this->title = $this->setTitle($title);
-        $this->description = $this->setDescription($description);
-        $this->created = $this->setCreated($created);
-        $this->modified = $this->setModified($modified);
-        $this->id = $this->setId($id);
+    public function __construct(int $id = null, UserBean $user = null, string $title = null, string $description = null, DateTime $created = null, DateTime $modified = null){
+        $this->id = $id;
+        $this->user = $user;
+        $this->title = $title;
+        $this->description = $description;
+        $this->created = $created;
+        $this->modified = $modified;
     }
 
     public function getId() : int {
         return $this->id;
     }
 
-    public function setId(int $id = null) {
+    public function setId(int $id) {
         $this->id = $id;
     }
 
@@ -101,6 +101,13 @@ final class NoteBean implements IBean, JsonSerializable {
      * @since 5.4.0
      */
     function jsonSerialize(){
-        // TODO: Implement jsonSerialize() method.
+        return [
+            "id" => $this->id,
+            "user" => $this->user,
+            "title" => $this->title,
+            "description" => $this->description,
+            "created" => $this->created->format("Y-m-d H:i:s"),
+            "modified" => $this->modified->format("Y-m-d H:i:s")
+        ];
     }
 }

@@ -7,20 +7,43 @@
  */
 final class UserBean implements IBean, JsonSerializable{
     
+    /**
+     * @var int Id of User
+     */
     private $id;
+    
+    /**
+     * @var string name of user
+     */
     private $name;
+    
+    /**
+     * @var string email of user
+     */
     private $email;
+    
+    /**
+     * @var string password of user
+     */
     private $password;
+    
+    /**
+     * @var DateTime Date that the user has been created
+     */
     private $created;
+    
+    /**
+     * @var DateTime Date of the last modify in user
+     */
     private $modified;
     
-    function __construct(string $name, string $email, string $password, DateTime $created, DateTime $modified, int $id = null){
+    function __construct(int $id = null, string $name = null, string $email = null, string $password = null, DateTime $created = null, DateTime $modified = null){
+        $this->id = $id;
         $this->name = $name;
         $this->email = $email;
         $this->password = $password;
         $this->created = $created;
         $this->modified = $modified;
-        $this->id = $id;
     }
     
     function getId() : int {
@@ -47,7 +70,7 @@ final class UserBean implements IBean, JsonSerializable{
         return $this->modified;
     }
 
-    function setId(int $id = null) {
+    function setId(int $id) {
         $this->id = $id;
     }
 
@@ -83,8 +106,8 @@ final class UserBean implements IBean, JsonSerializable{
             "id" => $this->id,
             "name" => $this->name,
             "email" => $this->email,
-            "created" => $this->created->format("Y-m-d H:i:s"),
-            "modified" => $this->modified->format("Y-m-d H:i:s")
+            "created" => isset($this->created) ? $this->created->format("Y-m-d H:i:s") : "",
+            "modified" => isset($this->modified) ? $this->modified->format("Y-m-d H:i:s") : ""
         ];
     }
 

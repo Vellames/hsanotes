@@ -14,7 +14,7 @@ final class UserBean implements IBean, JsonSerializable{
     private $created;
     private $modified;
     
-    function __construct(string $name, string $email, string $password, DateTime $created, DateTime $modified, int $id = null) {
+    function __construct(string $name, string $email, string $password, DateTime $created, DateTime $modified, int $id = null){
         $this->name = $name;
         $this->email = $email;
         $this->password = $password;
@@ -52,10 +52,7 @@ final class UserBean implements IBean, JsonSerializable{
     }
 
     function setName(string $name) {
-        echo "noome";
-        var_dump($name);
         $this->name = $name;
-        var_dump($this->name);
     }
 
     function setEmail(string $email) {

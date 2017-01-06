@@ -23,9 +23,9 @@ final class AuthBean implements IBean, JsonSerializable {
     private $expiration;
 
     public function __construct(UserBean $user, string $code, DateTime $expiration){
-        $this->user = $this->setUser($user);
-        $this->code = $this->setCode($code);
-        $this->expiration = $this->setExpiration($expiration);
+        $this->user = $user;
+        $this->code = $code;
+        $this->expiration = $expiration;
     }
 
     public function getUser() : UserBean{

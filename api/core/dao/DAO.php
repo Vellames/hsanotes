@@ -9,11 +9,6 @@
 abstract class DAO {
 
     /**
-     * @var Dao Instance of singleton
-     */
-    protected static $instance;
-
-    /**
      * @var Response Object that contain the response information
      */
     protected $response;
@@ -33,35 +28,34 @@ abstract class DAO {
     public abstract static function getInstance();
 
     /**
-     * This method is called when a get requisition is received. If Id is passed this method return the register
-     * whit the passed id, if not, return all registers of table
-     * @param null | int $id Id of object
+     * This method is called when a get requisition is received. Select the register by id column
+     * @param int $id Id of object
      *
-     * @return Response Return a response with the result information
+     * @return array Return a array with the result information
      */
-    public abstract function select(int $id = null) : Response;
+    public abstract function selectById(int $id) : array;
     
     /**
      * This method must insert an IBean in database
-     * @param IBean $object Object to insert in database
+     * @param mixed $object Object to insert in database
      *
-     * @return int Return a response with the result information
+     * @return array Return an array with the result information
      */
-    public abstract function insert($object) : int;
+    public abstract function insert($object) : array;
     
     /**
      * This method must update an IBean in database
      * @param IBean $object Object to update in database
      *
-     * @return int Return a response with the result information
+     * @return array Return a array with the result information
      */
-    public abstract function update(IBean $object) : int;
+    public abstract function update(IBean $object) : array;
     
     /**
      * This method must delete an row in database
      * @param int $id Id to delete
      *
-     * @return int Return a response with the result information
+     * @return array Return a array with the result information
      */
-    public abstract function deleteById(int $id) : int;
+    public abstract function deleteById(int $id) : array;
 }

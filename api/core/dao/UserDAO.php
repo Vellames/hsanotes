@@ -3,6 +3,14 @@
 
 class UserDAO extends DAO {
 
+    /**
+     * @var Dao Instance of singleton
+     */
+    private static $instance;
+
+    /**
+     * @var string Table name used to do the database manipulations
+     */
     private $tableName = "user";
 
     /**
@@ -17,26 +25,28 @@ class UserDAO extends DAO {
      * @return mixed Return an instance of an DAO
      */
     public static function getInstance() {
-        if(!isset(parent::$instance)){
-            parent::$instance = new UserDAO();
+        if(!isset(self::$instance)){
+            self::$instance = new UserDAO();
         }
-        return parent::$instance;
+        return self::$instance;
     }
 
-    public function select(int $id = null): Response{
-        $this->response->setStatus(ResponseStatus::SUCCEEDED_STATUS);
-        $this->response->setData("foo");
-        $this->response->setMessage("foo");
-        return $this->response;
+    /**
+     * This method is called when a get requisition is received. Select the register by id column
+     * @param int $id Id of object
+     *
+     * @return array Return a array with the result information
+     */
+    public function selectById(int $id): array{
+
     }
 
     /**
      * Insert an user in database
      * @param IBean $object Object with the data of new user
-     * @return int If the user are inserted, return the Id of user.  If not, return the error code * -1;
+     * @return array If the user are inserted, return the Id of user.  If not, return the error code * -1;
      */
-    public function insert($object): int{
-
+    public function insert($object): array{
         $sql = "INSERT INTO " . $this->tableName . " (name, email, password, created, modified) VALUES (?,?,?,?,?);";
         $stmt = DbConnection::getInstance()->prepare($sql);
         $stmt->bindValue(1, $object->getName(), PDO::PARAM_STR);
@@ -45,16 +55,37 @@ class UserDAO extends DAO {
         $stmt->bindValue(4, $object->getCreated()->format("Y-m-d H:i:s"), PDO::PARAM_STR);
         $stmt->bindValue(5, $object->getModified()->format("Y-m-d H:i:s"), PDO::PARAM_STR);
         $stmt->execute();
-        
-        return ($stmt->errorCode() > 0 ? ($stmt->errorCode() * - 1) : DbConnection::getInstance()->lastInsertId());
+
+        return $stmt->errorInfo();
     }
 
-    public function update(IBean $object): int{
-        return 1;
+    public function update(IBean $object): array{
+
     }
 
-    public function deleteById(int $id): int{
-        return 1;
+    public function deleteById(int $id): array{
+
+    }
+
+    /**
+     * Verify password and email of the user to login in application
+     * @param string $email Email of user
+     * @param string $password Password of user
+     * @return array Return the response information
+     */
+    public function login(string $email, string $password) : array{
+        $sql = "SELECT id, name, email, created, modified from {$this->tableName} where email = ? and password = ?";
+        $stmt = DbConnection::getInstance()->prepare($sql);
+        $stmt->bindValue(1, $email, PDO::PARAM_STR);
+        $stmt->bindValue(2, ApplicationSecurity::generatePasswordHash($password), PDO::PARAM_STR);
+        if(!$stmt->execute()){
+            return PDOErrorInfo::returnError($stmt->errorInfo(
+                DbConnection::ERROR_INFO_CODE_INDEX),
+                DbConnection::ERROR_INFO_MSG_INDEX
+            );
+        }
+
+        return $stmt->rowCount() === 1 ? $stmt->fetch(PDO::FETCH_ASSOC) : array();
     }
 
 }

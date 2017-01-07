@@ -51,5 +51,5 @@ abstract class MailSenderConfig {
     /**
      * Message showed to the receiver if he not have a HTML email client
      */
-    const ALT_BODY = "Seu cliente de email não suporta mensagens HTML. Por favor visualize a mensagem em um cliente de email com esse recurso";
+    const ALT_BODY = "Your mail client don't support HTML messages.";
 }

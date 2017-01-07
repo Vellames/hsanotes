@@ -1,0 +1,15 @@
+{
+  "name": "HighStakes Academy Notes",
+  "description": "A simple API for notes. Test for backend developer in HighStakes",
+  "authors": [
+    {
+      "name": "Cassiano Vellames",
+      "email": "c.vellames@outlook.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.0.0",
+    "phpunit/phpunit": "5.7.0",
+    "phpmailer/phpmailer": "5.2.*"
+  }
+}

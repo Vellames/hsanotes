@@ -26,4 +26,9 @@ abstract class App {
      * Life time of the recovery password token
      */
     const DEFAULT__RECOVERY_PASSWORD_TOKEN_EXPIRATION_TIME = "1 day";
+
+    /**
+     * Timezone of application
+     */
+    const DEFAULT_TIME_ZONE = "America/Sao_Paulo;
 }

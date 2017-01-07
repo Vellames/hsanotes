@@ -6,9 +6,9 @@
 
 define('ROOT_DIR', __DIR__);
 
-function autoload($class_name) {
+function autoload($className) {
 
-    $array_paths = array(
+    $paths = array(
         'core'. DIRECTORY_SEPARATOR . 'interface', 
         'core'. DIRECTORY_SEPARATOR . 'config',
         'core'. DIRECTORY_SEPARATOR . 'controller',
@@ -21,8 +21,8 @@ function autoload($class_name) {
         'core'. DIRECTORY_SEPARATOR . 'helpers' . DIRECTORY_SEPARATOR . "requisition"
     );
 
-    foreach($array_paths as $path){
-        $file = ROOT_DIR . DIRECTORY_SEPARATOR . $path . DIRECTORY_SEPARATOR . $class_name . ".php";        
+    foreach($paths as $path){
+        $file = ROOT_DIR . DIRECTORY_SEPARATOR . $path . DIRECTORY_SEPARATOR . $className . ".php";        
         if(file_exists($file)){
             include $file;
         }
@@ -34,7 +34,7 @@ spl_autoload_register('autoload');
 include 'core/libs/mail/PHPMailerAutoload.php';
 
 // Set the server default time zone
-date_default_timezone_set("America/Bahia");
+date_default_timezone_set(App::DEFAULT_TIME_ZONE);
 
 // Setting all necessary headers
 Headers::getAllHeaders();

@@ -22,7 +22,7 @@ class UserDAO extends DAO {
 
     /**
      * Singleton implementation
-     * @return mixed Return an instance of an DAO
+     * @return UserDAO Return an instance of an DAO
      */
     public static function getInstance() {
         if(!isset(self::$instance)){
@@ -42,15 +42,14 @@ class UserDAO extends DAO {
          $stmt = DbConnection::getInstance()->prepare($sql);
          $stmt->bindValue(1, $id , PDO::PARAM_INT);
          return PDOSelectResult::returnArray($stmt->execute(), $stmt);
-         
     }
 
     /**
      * Insert an user in database
-     * @param UserBean $object Object with the data of new user
+     * @param IBean $object Object with the data of new user
      * @return array If the user are inserted, return the Id of user.  If not, return the error code * -1;
      */
-    public function insert($object): array{
+    public function insert(IBean $object): array{
         $sql = "INSERT INTO " . $this->tableName . " (name, email, password, created, modified) VALUES (?,?,?,?,?);";
         $stmt = DbConnection::getInstance()->prepare($sql);
         $stmt->bindValue(1, $object->getName(), PDO::PARAM_STR);
@@ -65,7 +64,7 @@ class UserDAO extends DAO {
 
     /**
      * Update an user in database
-     * @param UserBean $object to update
+     * @param IBean $object to update
      * @return array Return the result of update action
      */
     public function update(IBean $object): array{
@@ -107,4 +106,73 @@ class UserDAO extends DAO {
         return $stmt->rowCount() === 1 ? $stmt->fetch(PDO::FETCH_ASSOC) : array();
     }
 
+    /**
+     * @param string $email Email
+     * @return int Id of user, if user not exists, return -1
+     */
+    public function emailExists(string $email) : int {
+        $sql = "SELECT id FROM {$this->tableName} where email = ?";
+        $stmt = DbConnection::getInstance()->prepare($sql);
+        $stmt->bindValue(1, $email, PDO::PARAM_STR);
+        $stmt->execute();
+
+        return $stmt->rowCount() == 1 ? $stmt->fetch(PDO::FETCH_ASSOC)["id"] : -1;
+    }
+
+    /**
+     * Generate the fields to password recovery solicitation
+     * @param int $userId Id of user to recovery
+     * @return array Array with a PDO error or hash information
+     */
+    public function generatePasswordRecoveryHash(int $userId) : array {
+
+        $expiration = new DateTime();
+        $expiration->add(date_interval_create_from_date_string(App::DEFAULT__RECOVERY_PASSWORD_TOKEN_EXPIRATION_TIME));
+
+        $hash = ApplicationSecurity::generatePasswordRecoveryHash($userId);
+
+        $sql = "UPDATE {$this->tableName} SET password_recovery_hash = ?, password_recovery_expiration = ? where id = ?";
+        $stmt = DbConnection::getInstance()->prepare($sql);
+        $stmt->bindValue(1, $hash, PDO::PARAM_STR);
+        $stmt->bindValue(2, $expiration->format("Y-m-d H:i:s"), PDO::PARAM_STR);
+        $stmt->bindValue(3, $userId, PDO::PARAM_INT);
+
+        $successArrayReturn = array(
+            "hash" => $hash,
+            "expiration" => $expiration->format("Y-m-d H:i:s")
+        );
+
+        return $stmt->execute() ? $successArrayReturn :  $stmt->errorInfo();
+    }
+
+    /**
+     * Verify if the email and hash sent by the endpoint are correct
+     * @param string $email Email of user
+     * @param string $hash Hash of password recovery
+     * @return string|bool|array Return true if hash is ok, else, return an string with the error description. If an error occurred, return the error info array
+     */
+    public function checkPasswordRecoveryHash(string $email, string $hash){
+        $sql = "select id, password_recovery_expiration from {$this->tableName} where email = ? and password_recovery_hash = ?";
+        $stmt = DbConnection::getInstance()->prepare($sql);
+        $stmt->bindValue(1, $email, PDO::PARAM_STR);
+        $stmt->bindValue(2, $hash, PDO::PARAM_STR);
+        if(!$stmt->execute()){
+            return $stmt->errorInfo();
+        }
+
+        // Verify if the hash matches with email
+        if($stmt->rowCount() == 0){
+            return "Hash and email doe'nt match";
+        }
+
+        //Verify the expiration of hash
+        $hashExpiration = new DateTime($stmt->fetch(PDO::FETCH_ASSOC)["password_recovery_expiration"]);
+        $actualTime = new DateTime();
+
+        if($actualTime->getTimestamp() > $hashExpiration->getTimestamp()){
+            return "Password recovery hash expired";
+        }
+
+        return true;
+    }
 }

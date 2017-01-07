@@ -1,15 +1,18 @@
 <?php
 
 /**
- * This class is used to confire all necessary headers to API output
+ * This class is used to configure all necessary headers to API output
  *
  * @author cassiano.vellames <c.vellames@outlook.com>
  * @since 1.0.0
  */
 final class Headers {
-    
+
+    /**
+     * Any headers must be inserted here
+     */
     public static function getAllHeaders(){
-        header('Content-Type: application/json');
+        //header('Content-Type: application/json');
     }
     
 }

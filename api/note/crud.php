@@ -18,7 +18,7 @@ $verb = strtoupper($_SERVER['REQUEST_METHOD']);
 $class = new NoteController();
 switch ($verb) {
     case "GET":
-        ApplicationSecurity::verifyUserToken($_GET["id"]);
+        ApplicationSecurity::verifyUserToken($_GET["user_id"]);
         echo json_encode($class->getRequisition($_GET["id"]), JSON_UNESCAPED_UNICODE);
         break;
     case "POST":
@@ -32,7 +32,8 @@ switch ($verb) {
         echo json_encode($class->putRequisition($postData), JSON_UNESCAPED_UNICODE);
         break;
     case "DELETE":
-
+        ApplicationSecurity::verifyUserToken($_GET["user_id"]);
+        echo json_encode($class->deleteRequisition($_GET["id"]), JSON_UNESCAPED_UNICODE);
         break;
     default:
         $response->setStatus(ResponseStatus::FAILED_STATUS);

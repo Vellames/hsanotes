@@ -1,0 +1,29 @@
+<?php
+
+/**
+ * This class contain some basic configurations of API
+ * @created Cassiano Vellames <c.vellames@outlook.com>
+ * @since 1.0.0
+ */
+abstract class App {
+
+    /**
+     * If true, the API will be encrypt the password with sha1
+     */
+    const GENERATE_PASSWORD_HASH = true;
+
+    /**
+     * Default registers by page for pagination system
+     */
+    const DEFAULT_REGISTERS_BY_PAGE = 10;
+
+    /**
+     * Life time of any new token
+     */
+    const DEFAULT_NEW_TIME_TOKEN = "10 minutes";
+
+    /**
+     * Life time of the recovery password token
+     */
+    const DEFAULT__RECOVERY_PASSWORD_TOKEN_EXPIRATION_TIME = "1 day";
+}

@@ -13,7 +13,12 @@ class ApplicationSecurity{
      * @return string Password hash
      */
     public static function generatePasswordHash(string $password) : string {
-        return sha1("SDGdfhd94#$@#&#$#%@&her" . $password . "%&*hrehreth45&%$&$57");
+        if(App::GENERATE_PASSWORD_HASH){
+            return sha1("SDGdfhd94#$@#&#$#%@&her" . $password . "%&*hrehreth45&%$&$57");
+        } else {
+            return $password;
+        }
+
     }
 
     /**
@@ -23,6 +28,15 @@ class ApplicationSecurity{
      */
     public static function generateAuthHash(int $userId) : string {
         return sha1("DGS23%@#@#00" . time() . $userId . "FDSDSG23523@#%#@236b");
+    }
+
+    /**
+     * Generate a hash to password recovery
+     * @param int $userId Id to recovery password
+     * @return string return the hash
+     */
+    public static function generatePasswordRecoveryHash(int $userId) : string {
+        return mt_rand(1000000, 9999999) . $userId;
     }
     
     /**
@@ -36,6 +50,7 @@ class ApplicationSecurity{
         // Verify if Authorization Header exists
         $headers = apache_request_headers();
         if(!isset($headers['Authorization'])){
+            http_response_code(401);
             $response->setStatus(ResponseStatus::FAILED_STATUS);
             $response->setMessage("Missing Authorization header");
             die(json_encode($response, JSON_UNESCAPED_UNICODE));
@@ -47,11 +62,13 @@ class ApplicationSecurity{
         
         // Catch any errors in result
         if(!$resultAuth[PDOSelectResult::EXECUTED_INDEX]){
+            http_response_code(401);
             die(json_encode($resultAuth[PDOSelectResult::RESULT_INDEX], JSON_UNESCAPED_UNICODE));
         }
         
         // Verify if the authorization is valid for the user
         if(!$resultAuth[PDOSelectResult::RESULT_INDEX]){
+            http_response_code(401);
             $response->setStatus(ResponseStatus::FAILED_STATUS);
             $response->setMessage("Invalid Authorization code");
             $response->setData(PDOErrorInfo::returnError(
@@ -63,6 +80,7 @@ class ApplicationSecurity{
         
         // Verify if the authorization sended by endpoint its the same as the code in database
         if($authorization != $resultAuth[PDOSelectResult::RESULT_INDEX]["code"]){
+            http_response_code(401);
             $response->setStatus(ResponseStatus::FAILED_STATUS);
             $response->setMessage("Authentication code does not match");
             die(json_encode($response, JSON_UNESCAPED_UNICODE));
@@ -73,6 +91,7 @@ class ApplicationSecurity{
         $tokenExpiration = new DateTime($resultAuth[PDOSelectResult::RESULT_INDEX]["expiration"]);
         
         if($actualDateTime->getTimestamp() > $tokenExpiration->getTimestamp()){
+            http_response_code(401);
             $response->setStatus(ResponseStatus::FAILED_STATUS);
             $response->setMessage("Expired Authorization code");
             die(json_encode($response, JSON_UNESCAPED_UNICODE));

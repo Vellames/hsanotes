@@ -1,7 +1,7 @@
 <?php
 
 /**
- *
+ * This class is a abstraction of an user
  * @author Cassiano Vellames <c.vellames@outlook.com>
  * @since 1.0.0
  */
@@ -36,62 +36,101 @@ final class UserBean implements IBean, JsonSerializable{
      * @var DateTime Date of the last modify in user
      */
     private $modified;
-    
-    function __construct(int $id = null, string $name = null, string $email = null, string $password = null, DateTime $created = null, DateTime $modified = null){
+
+    /**
+     * @var string Hash with the last solicitation of password recovery
+     */
+    private $passwordRecoveryHash;
+
+    /**
+     * @var DateTime Date Time of the last solicitation of password recovery
+     */
+    private $passwordRecoveryExpiration;
+
+    /**
+     * All parameters are optional, so the object can be constructed in several ways
+     * @param int|null $id
+     * @param string|null $name
+     * @param string|null $email
+     * @param string|null $password
+     * @param DateTime|null $created
+     * @param DateTime|null $modified
+     * @param string|null $passwordRecoveryHash
+     * @param DateTime|null $passwordRecoveryExpiration
+     */
+    function __construct(int $id = null, string $name = null, string $email = null, string $password = null, DateTime $created = null, DateTime $modified = null, string $passwordRecoveryHash = null, DateTime $passwordRecoveryExpiration = null){
         $this->id = $id;
         $this->name = $name;
         $this->email = $email;
         $this->password = $password;
         $this->created = $created;
         $this->modified = $modified;
+        $this->passwordRecoveryHash = $passwordRecoveryHash;
+        $this->passwordRecoveryExpiration = $passwordRecoveryExpiration;
     }
-    
-    function getId() : int {
+
+    public function getId(): int {
         return $this->id;
     }
 
-    function getName() : string {
-        return $this->name;
-    }
-
-    function getEmail() : string {
-        return $this->email;
-    }
-
-    function getPassword() : string {
-        return $this->password;
-    }
-
-    function getCreated() : DateTime{
-        return $this->created;
-    }
-
-    function getModified() : DateTime{
-        return $this->modified;
-    }
-
-    function setId(int $id) {
+    public function setId(int $id) {
         $this->id = $id;
     }
 
-    function setName(string $name) {
+    public function getName(): string {
+        return $this->name;
+    }
+
+    public function setName(string $name) {
         $this->name = $name;
     }
 
-    function setEmail(string $email) {
+    public function getEmail(): string {
+        return $this->email;
+    }
+
+    public function setEmail(string $email) {
         $this->email = $email;
     }
 
-    function setPassword(string $password) {
+    public function getPassword(): string {
+        return $this->password;
+    }
+
+    public function setPassword(string $password) {
         $this->password = $password;
     }
 
-    function setCreated(DateTime $created) {
+    public function getCreated(): DateTime {
+        return $this->created;
+    }
+
+    public function setCreated(DateTime $created) {
         $this->created = $created;
     }
 
-    function setModified(DateTime $modified) {
+    public function getModified(): DateTime {
+        return $this->modified;
+    }
+
+    public function setModified(DateTime $modified) {
         $this->modified = $modified;
+    }
+
+    public function getPasswordRecoveryHash(): string {
+        return $this->passwordRecoveryHash;
+    }
+
+    public function setPasswordRecoveryHash(string $passwordRecoveryHash) {
+        $this->passwordRecoveryHash = $passwordRecoveryHash;
+    }
+
+    public function getPasswordRecoveryExpiration(): DateTime {
+        return $this->passwordRecoveryExpiration;
+    }
+
+    public function setPasswordRecoveryExpiration(DateTime $passwordRecoveryExpiration) {
+        $this->passwordRecoveryExpiration = $passwordRecoveryExpiration;
     }
 
     /**
@@ -102,12 +141,13 @@ final class UserBean implements IBean, JsonSerializable{
      * @since 5.4.0
      */
     public function jsonSerialize() {
+        // Note: Password is not passed in the serialized object
         return [
             "id" => $this->id,
             "name" => $this->name,
             "email" => $this->email,
-            "created" => isset($this->created) ? $this->created->format("Y-m-d H:i:s") : "",
-            "modified" => isset($this->modified) ? $this->modified->format("Y-m-d H:i:s") : ""
+            "created" => isset($this->created) ? $this->created->format("Y-m-d H:i:s") : null,
+            "modified" => isset($this->modified) ? $this->modified->format("Y-m-d H:i:s") : null
         ];
     }
 

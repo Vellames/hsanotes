@@ -5,7 +5,7 @@
  * @author Cassiano Vellames <c.vellames@outlook.com>
  * @since 1.0.0
  */
-final class AuthBean implements IBean, JsonSerializable {
+final class AuthBean implements IBean {
 
     /**
      * @var UserBean User to which it belongs the validation code
@@ -22,6 +22,12 @@ final class AuthBean implements IBean, JsonSerializable {
      */
     private $expiration;
 
+    /**
+     * All parameters are optional, so the object can be constructed in several ways
+     * @param UserBean|null $user
+     * @param string|null $code
+     * @param DateTime|null $expiration
+     */
     public function __construct(UserBean $user = null, string $code = null , DateTime $expiration = null){
         $this->user = $user;
         $this->code = $code;
@@ -50,16 +56,5 @@ final class AuthBean implements IBean, JsonSerializable {
 
     public function setExpiration(DateTime $expiration){
         $this->expiration = $expiration;
-    }
-
-    /**
-     * Specify data which should be serialized to JSON
-     * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
-     * @return mixed data which can be serialized by <b>json_encode</b>,
-     * which is a value of any type other than a resource.
-     * @since 5.4.0
-     */
-    function jsonSerialize(){
-        // TODO: Implement jsonSerialize() method.
     }
 }

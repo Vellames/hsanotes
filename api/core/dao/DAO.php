@@ -37,11 +37,11 @@ abstract class DAO {
     
     /**
      * This method must insert an IBean in database
-     * @param mixed $object Object to insert in database
+     * @param IBean $object Object to insert in database
      *
      * @return array Return an array with the result information
      */
-    public abstract function insert($object) : array;
+    public abstract function insert(IBean $object) : array;
     
     /**
      * This method must update an IBean in database

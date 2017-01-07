@@ -1,13 +1,26 @@
 <?php
 
 /**
- * Description of Response
- *
- * @author cassiano.vellames
+ * This class is used to return the data to the user in all requisitions
+ * All communication with the endpoint must be made with a Response object
+ * @author Cassiano Vellames <c.vellames@outlook.com>
+ * @since 1.0.0
  */
 final class Response implements JsonSerializable{
+
+    /**
+     * @var string Status of response, preferably use the ResponseStatus 'enum' to set this attribute
+     */
     private $status;
+
+    /**
+     * @var string Message of the requisition
+     */
     private $message;
+
+    /**
+     * @var mixed Data returned to the endpoint
+     */
     private $data;
     
     public function getStatus() : string {
@@ -36,21 +49,15 @@ final class Response implements JsonSerializable{
     public function setData($data) {
         $this->data = $data;
     }
-    
-    public function defaultSelectResultErrorResponse($result) : Response{
-        $this->setStatus(ResponseStatus::FAILED_STATUS);
-        $this->setMessage("Error in select step. Contact the administrator for more informations");
-        $this->setData(PDOErrorInfo::returnError(
-            $result[PDOSelectResult::RESULT_INDEX][DbConnection::ERROR_INFO_CODE_INDEX],
-            $result[PDOSelectResult::RESULT_INDEX][DbConnection::ERROR_INFO_MSG_INDEX]
-        ));
-        return $this;
-    }
-    
+
     /**
-     * Encoded object 
+     * Specify data which should be serialized to JSON
+     * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
+     * @return mixed data which can be serialized by <b>json_encode</b>,
+     * which is a value of any type other than a resource.
+     * @since 5.4.0
      */
-    public function jsonSerialize() {
+    function jsonSerialize(){
         return [
             "status" => $this->getStatus(),
             "message" => $this->getMessage(),

@@ -1,6 +1,8 @@
 <?php
 
 /**
+ * All controllers must extends of the Controller class. This abstract class contains the basic
+ * methods that a controller must be
  * @author Cassiano Vellames <c.vellames@outlook.com>
  * @since 1.0.0
  */
@@ -20,13 +22,13 @@ abstract class Controller{
     }
 
     /**
-     * This method is called when a get requisition is received. If Id is passed this method return the register
-     * whit the passed id, if not, return all registers of table.
+     * This method is called when a get requisition is received.
+     * Load an IBean from database
      * This method must be called when the user wants retrieve the data from database
-     * @param null | int $id Id of object
+     * @param int $id Id of object
      * @return Response Object with response data
      */
-    public abstract function getRequisition($id = null) : Response;
+    public abstract function getRequisition(int $id) : Response;
 
     /**
      * This method is called when a post requisition is received.
@@ -34,7 +36,7 @@ abstract class Controller{
      * @param $postData mixed Data to insert in database
      * @return Response Object with response data
      */
-    public abstract function postRequisition($postData) : Response;
+    public abstract function postRequisition(array $postData) : Response;
 
     /**
      * This method is called when a put or patch requisition is received
@@ -42,14 +44,14 @@ abstract class Controller{
      * @param $putData mixed Data to update in database
      * @return Response Object with response data
      */
-    public abstract function putRequisition($putData) : Response;
+    public abstract function putRequisition(array $putData) : Response;
 
     /**
      * This method is called when a delete requisition is received
      * This method must be called when the user wants delete a register in database
-     * @param $id int  Id to delete
+     * @param int $id int  Id to delete
      * @return Response Object with response data
      */
-    public abstract function deleteRequisition($id) : Response;
+    public abstract function deleteRequisition(int $id) : Response;
 
 }

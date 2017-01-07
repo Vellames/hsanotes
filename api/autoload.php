@@ -1,23 +1,23 @@
 <?php
 
+/**
+ * This file contain the autoload function and all standard behaviour of API
+ */
+
 define('ROOT_DIR', __DIR__);
-
-date_default_timezone_set("America/Bahia");
-
-// Setting all necessary headers
-//Headers::getAllHeaders();
-
 
 function autoload($class_name) {
 
     $array_paths = array(
         'core'. DIRECTORY_SEPARATOR . 'interface', 
         'core'. DIRECTORY_SEPARATOR . 'config',
-        'core'. DIRECTORY_SEPARATOR . 'libs'. DIRECTORY_SEPARATOR. 'personal',
         'core'. DIRECTORY_SEPARATOR . 'controller',
         'core'. DIRECTORY_SEPARATOR . 'bean',
         'core'. DIRECTORY_SEPARATOR . 'dao',
-        'core'. DIRECTORY_SEPARATOR . 'utils'
+        'core'. DIRECTORY_SEPARATOR . 'helpers' . DIRECTORY_SEPARATOR . "database",
+        'core'. DIRECTORY_SEPARATOR . 'helpers' . DIRECTORY_SEPARATOR . "security",
+        'core'. DIRECTORY_SEPARATOR . 'helpers' . DIRECTORY_SEPARATOR . "response",
+        'core'. DIRECTORY_SEPARATOR . 'helpers' . DIRECTORY_SEPARATOR . "mail",
     );
 
     foreach($array_paths as $path){
@@ -27,5 +27,13 @@ function autoload($class_name) {
         }
     }
 }
-
 spl_autoload_register('autoload');
+
+// PHPMailer Autoload
+include 'core/libs/mail/PHPMailerAutoload.php';
+
+// Set the server default time zone
+date_default_timezone_set("America/Bahia");
+
+// Setting all necessary headers
+Headers::getAllHeaders();

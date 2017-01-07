@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * This class is an abstraction of a note
  * @author Cassiano Vellames <c.vellames@outlook.com>
  * @since 1.0.0
  */
@@ -36,6 +37,15 @@ final class NoteBean implements IBean, JsonSerializable {
      */
     private $modified;
 
+    /**
+     * All parameters are optional, so the object can be constructed in several ways
+     * @param int|null $id
+     * @param UserBean|null $user
+     * @param string|null $title
+     * @param string|null $description
+     * @param DateTime|null $created
+     * @param DateTime|null $modified
+     */
     public function __construct(int $id = null, UserBean $user = null, string $title = null, string $description = null, DateTime $created = null, DateTime $modified = null){
         $this->id = $id;
         $this->user = $user;
@@ -103,11 +113,11 @@ final class NoteBean implements IBean, JsonSerializable {
     function jsonSerialize(){
         return [
             "id" => $this->id,
-            "user" => $this->user,
+            "user_id" => $this->user->getId(),
             "title" => $this->title,
             "description" => $this->description,
-            "created" => $this->created->format("Y-m-d H:i:s"),
-            "modified" => $this->modified->format("Y-m-d H:i:s")
+            "created" => isset($this->created) ? $this->created->format("Y-m-d H:i:s") : null,
+            "modified" => isset($this->modified) ? $this->modified->format("Y-m-d H:i:s") : null
         ];
     }
 }

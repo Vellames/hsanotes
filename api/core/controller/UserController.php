@@ -16,23 +16,27 @@ class UserController extends Controller {
     
     /**
      * Load an user
-     * @param type $id User id to load information
+     * @param int $id User id to load information
      * @return Response Return the user loaded
      */
-    public function getRequisition($id = null): Response{
+    public function getRequisition(int $id): Response{
+
+        // Recovery the data of database
         $resultUser = UserDAO::getInstance()->selectById($id);
         
         // Catch any errors in result
         if(!$resultUser[PDOSelectResult::EXECUTED_INDEX]){
+            return PDOSelectResult::defaultSelectResultError($resultUser);;
+        }
+
+        // Verify if note exists
+        if(!$resultUser[PDOSelectResult::RESULT_INDEX]){
             $this->response->setStatus(ResponseStatus::FAILED_STATUS);
-            $this->response->setMessage("Error in user selection");
-            $this->response->setData(PDOErrorInfo::returnError(
-                $resultUser[PDOSelectResult::RESULT_INDEX][DbConnection::ERROR_INFO_CODE_INDEX],
-                $resultUser[PDOSelectResult::RESULT_INDEX][DbConnection::ERROR_INFO_MSG_INDEX]
-            ));
+            $this->response->setMessage("The user don't exists");
             return $this->response;
         }
-        
+
+        // Creating necessary objects
         $userBean = new UserBean(
             $resultUser[PDOSelectResult::RESULT_INDEX]["id"],
             $resultUser[PDOSelectResult::RESULT_INDEX]["name"],
@@ -41,9 +45,11 @@ class UserController extends Controller {
             new DateTime($resultUser[PDOSelectResult::RESULT_INDEX]["created"]),
             new DateTime($resultUser[PDOSelectResult::RESULT_INDEX]["modified"])
         );
-        
+
+        // Renew token
         $token = $this->renewAuthToken($userBean);
-        
+
+        // Send the response
         $this->response->setStatus(ResponseStatus::SUCCEEDED_STATUS);
         $this->response->setMessage("User listed with success");
         $this->response->setData(array(
@@ -60,15 +66,19 @@ class UserController extends Controller {
      * @param mixed $postData Data sended from the endpoint
      * @return Response Object with the Response information
      */
-    public function postRequisition($postData): Response{
+    public function postRequisition(array $postData): Response{
 
+        // Verify if user email is valid
         if(!$this->verifyUserEmail($postData["email"])){
+            http_response_code(400);
             $this->response->setStatus(ResponseStatus::FAILED_STATUS);
             $this->response->setMessage("Invalid email");
             return $this->response;
         }
 
+        // Verify if user password is valid
         if(!$this->verifyUserPassword($postData["password"])){
+            http_response_code(400);
             $this->response->setStatus(ResponseStatus::FAILED_STATUS);
             $this->response->setMessage("The password must be at least 6 letters");
             return $this->response;
@@ -85,49 +95,43 @@ class UserController extends Controller {
             $actualDateTime
         );
 
+        // Starting the transaction
         DbConnection::getInstance()->beginTransaction();
+
+        //Inserting a new user
         $result = UserDAO::getInstance()->insert($userBean);
 
-        // If user are inserted, try insert the auth row
-        if($result[DbConnection::ERROR_INFO_CODE_INDEX] == DbConnection::PDO_SUCCESS_RETURN){
-
-            // Get the last id of user in the database
-            $lastIdUser = DbConnection::getInstance()->lastInsertId();
-            
-            // Insert a new auth
-            $resultAuth = AuthDAO::getInstance()->insert($lastIdUser);
-
-            // If auth are not inserted, abort the operation
-            if($resultAuth[DbConnection::ERROR_INFO_CODE_INDEX] != DbConnection::PDO_SUCCESS_RETURN){
-                DbConnection::getInstance()->rollBack();
-                $this->response->setStatus(ResponseStatus::FAILED_STATUS);
-                $this->response->setMessage("Error to insert user");
-                $this->response->setData(PDOErrorInfo::returnError(
-                    $resultAuth[DbConnection::ERROR_INFO_CODE_INDEX],
-                    $resultAuth[DbConnection::ERROR_INFO_MSG_INDEX]
-                ));
-            }
-
-            // If auth are inserted, commit the operation
-            DbConnection::getInstance()->commit();
-            $this->response->setStatus(ResponseStatus::SUCCEEDED_STATUS);
-            $this->response->setMessage("User inserted with success");
-
-            $userBean->setId($lastIdUser);
-            $this->response->setData(array(
-                "user" => $userBean
-            ));
-
-        } else {
-            // Case user arent inserted, rollback the operation
+        // If an error occurred in user insertion
+        if($result[DbConnection::ERROR_INFO_CODE_INDEX] != DbConnection::PDO_SUCCESS_RETURN){
             DbConnection::getInstance()->rollBack();
-            $this->response->setStatus(ResponseStatus::FAILED_STATUS);
-            $this->response->setMessage("Error to insert user");
-            $this->response->setData(PDOErrorInfo::returnError(
-                $result[DbConnection::ERROR_INFO_CODE_INDEX],
-                $result[DbConnection::ERROR_INFO_MSG_INDEX]
-            ));
+            return PDOErrorInfo::defaultDMLResultError($result);
         }
+
+        // If user are inserted, try insert the auth row
+
+        // Get the last id of user in the database
+        $lastIdUser = DbConnection::getInstance()->lastInsertId();
+        $userBean->setId($lastIdUser);
+
+        // Insert a new auth
+        $resultAuth = AuthDAO::getInstance()->insert($userBean);
+
+        // If auth are not inserted, abort the operation
+        if($resultAuth[DbConnection::ERROR_INFO_CODE_INDEX] != DbConnection::PDO_SUCCESS_RETURN){
+            DbConnection::getInstance()->rollBack();
+            return PDOErrorInfo::defaultDMLResultError($resultAuth);
+        }
+
+        // If auth are inserted, commit the operation
+        DbConnection::getInstance()->commit();
+
+        // Send the response
+        http_response_code(201);
+        $this->response->setStatus(ResponseStatus::SUCCEEDED_STATUS);
+        $this->response->setMessage("User inserted with success");
+        $this->response->setData(array(
+            "user" => $userBean
+        ));
         
         return $this->response;
     }
@@ -135,23 +139,33 @@ class UserController extends Controller {
     /**
      * The put requisition edit an user in database
      * The field "Modified" is generated in the method
-     * @param type $putData Data sended from the endpoint
+     * @param array $putData Data sended from the endpoint
      * @return \Response
      */
-    public function putRequisition($putData): Response {
-        
+    public function putRequisition(array $putData): Response {
+
+        // Verify if user email is valid
+        if(!$this->verifyUserEmail($putData["email"])){
+            http_response_code(400);
+            $this->response->setStatus(ResponseStatus::FAILED_STATUS);
+            $this->response->setMessage("Invalid email");
+            return $this->response;
+        }
+
+        // Verify if user password is valid
+        if(!$this->verifyUserPassword($putData["password"])) {
+            http_response_code(400);
+            $this->response->setStatus(ResponseStatus::FAILED_STATUS);
+            $this->response->setMessage("The password must be at least 6 letters");
+            return $this->response;
+        }
+
         // Verify if user exists
         $resultUser = UserDAO::getInstance()->selectById($putData["id"]);
         
         // Catch any errors in result
         if(!$resultUser[PDOSelectResult::EXECUTED_INDEX]){
-            $this->response->setStatus(ResponseStatus::FAILED_STATUS);
-            $this->response->setMessage("Error in user selection");
-            $this->response->setData(PDOErrorInfo::returnError(
-                $resultUser[PDOSelectResult::RESULT_INDEX][DbConnection::ERROR_INFO_CODE_INDEX],
-                $resultUser[PDOSelectResult::RESULT_INDEX][DbConnection::ERROR_INFO_MSG_INDEX]
-            ));
-            return $this->response;
+            return PDOSelectResult::defaultSelectResultError($resultUser);
         }
         
         // Verify if user exists
@@ -174,14 +188,7 @@ class UserController extends Controller {
         
         // If user arent inserted, rollback the transcation
         if($returnPut[DbConnection::ERROR_INFO_CODE_INDEX] != DbConnection::PDO_SUCCESS_RETURN){
-            DbConnection::getInstance()->rollBack();
-            $this->response->setStatus(ResponseStatus::FAILED_STATUS);
-            $this->response->setMessage("Error to insert user");
-            $this->response->setData(PDOErrorInfo::returnError(
-                $returnPut[DbConnection::ERROR_INFO_CODE_INDEX],
-                $returnPut[DbConnection::ERROR_INFO_MSG_INDEX]
-            ));
-            return $this->response;
+            return PDOErrorInfo::defaultDMLResultError($returnPut);
         }
         
         // Generate token of user
@@ -198,7 +205,7 @@ class UserController extends Controller {
         return $this->response;
     }
 
-    public function deleteRequisition($id): Response {
+    public function deleteRequisition(int $id): Response {
         return $this->response;
     }
 
@@ -250,6 +257,122 @@ class UserController extends Controller {
     }
 
     /**
+     * Logoff the user of system
+     * @param int $userId Id of user
+     * @return Response Response data
+     */
+    public function logoff(int $userId) : Response {
+
+        $result = AuthDAO::getInstance()->logoff($userId);
+
+        // Catch any errors in result
+        if($result[DbConnection::ERROR_INFO_CODE_INDEX] != DbConnection::PDO_SUCCESS_RETURN){
+            return PDOErrorInfo::defaultDMLResultError($result);
+        }
+
+        $this->response->setStatus(ResponseStatus::SUCCEEDED_STATUS);
+        $this->response->setMessage("Logoff realized with success");
+
+        return $this->response;
+    }
+
+    /**
+     * Renew the token of user
+     * @param UserBean $userBean User to renew token
+     * @return string string Return the new token
+     */
+    public function renewAuthToken(UserBean $userBean){
+
+        // Adding the new time token
+        $dateTime = new DateTime();
+        $dateTime->add(date_interval_create_from_date_string(App::DEFAULT_NEW_TIME_TOKEN));
+        
+        $token = ApplicationSecurity::generateAuthHash($userBean->getId());
+        $authBean = new AuthBean($userBean, $token, $dateTime);
+
+        // Update Auth register
+        $responseAuth = AuthDAO::getInstance()->update($authBean);
+        
+        // In case of error in the update of Auth
+        if($responseAuth[DbConnection::ERROR_INFO_CODE_INDEX] != DbConnection::PDO_SUCCESS_RETURN){
+            $this->response->setStatus(ResponseStatus::FAILED_STATUS);
+            $this->response->setMessage("Error to update token");
+            $this->response->setData(PDOErrorInfo::returnError(
+                $responseAuth[DbConnection::ERROR_INFO_CODE_INDEX],
+                $responseAuth[DbConnection::ERROR_INFO_MSG_INDEX]
+            ));
+            die(json_encode($this->response, JSON_UNESCAPED_UNICODE));
+        }
+        
+        return $token;
+    }
+
+    /**
+     * Send an email to the recipient
+     * @param string $email Email to send the message
+     * @return Response Return the response data
+     */
+    public function forgotPassword(string $email) : Response{
+
+        // Verify if email exists in database
+        $userId = UserDAO::getInstance()->emailExists($email);
+        if($userId === -1){
+            $this->response->setStatus(ResponseStatus::FAILED_STATUS);
+            $this->response->setMessage("This email not exist in database");
+            return $this->response;
+        }
+
+        // Get the hash
+        $result = UserDAO::getInstance()->generatePasswordRecoveryHash($userId);
+
+        // Verify if the transaction is ok
+        if(!isset($result["hash"])){
+            PDOErrorInfo::defaultDMLResultError($result);
+        }
+
+        // Set up the email
+        $emailSubject = "HSA Notes - Recovery Password";
+        $emailBody = "<p>Hi, lost your password? I am the HSA Robot and i will help you to resolve this problem :)</p>
+                      <p>Put this code in recovery screen in the app: <strong>{$result["hash"]}</strong></p>
+                      <p>This code is valid until <strong>{$result["expiration"]}</strong></p>
+                      ";
+
+        // Send mail
+        if(MailSender::getInstance()->sendEmail(array($email), $emailSubject, $emailBody)) {
+            $this->response->setStatus(ResponseStatus::SUCCEEDED_STATUS);
+            $this->response->setMessage("An email has been sent to you with an activation code. Please verify your mailbox");
+        } else {
+            http_response_code(500);
+            $this->response->setStatus(ResponseStatus::FAILED_STATUS);
+            $this->response->setMessage("An error has occurred when we tried sent your email.");
+        }
+
+        return $this->response;
+    }
+
+    /**
+     * @param string $password
+     * @param string $hash
+     * @param string $email
+     * @return Response
+     */
+    public function renewPassword(string $password, string $hash, string $email) : Response{
+        $result = UserDAO::getInstance()->checkPasswordRecoveryHash($email, $hash);
+
+        // If an array is returned, It is because an PDO error occurred
+        if(is_array($result)){
+            return PDOSelectResult::defaultSelectResultError($result);
+        }
+
+        if(is_string($result)){
+            $this->response->setStatus(ResponseStatus::FAILED_STATUS);
+            $this->response->setMessage($result);
+        }
+
+        //TODO: Continue
+    }
+
+    /**
      * Check if email is valid
      * @param string $userMail User to be checked
      * @return bool Return if the user has been validated with success
@@ -265,33 +388,5 @@ class UserController extends Controller {
      */
     private function verifyUserPassword(string $password) : bool {
         return (strlen($password) >= 6);
-    }
-    
-    /**
-     * Renew the token of user
-     * @param UserBean $userBean User to renew token
-     * @return type string Return the new token
-     */
-    public function renewAuthToken(UserBean $userBean){
-        $dateTime = new DateTime();
-        $dateTime->add(date_interval_create_from_date_string("10 minutes"));
-        
-        $token = ApplicationSecurity::generateAuthHash($userBean->getId());
-        $authBean = new AuthBean($userBean, $token, $dateTime);
-        
-        $responseAuth = AuthDAO::getInstance()->update($authBean);
-        
-        // In case of error in the update of Auth
-        if($responseAuth[DbConnection::ERROR_INFO_CODE_INDEX] != DbConnection::PDO_SUCCESS_RETURN){
-            $this->response->setStatus(ResponseStatus::FAILED_STATUS);
-            $this->response->setMessage("Error to update token");
-            $this->response->setData(PDOErrorInfo::returnError(
-                $responseAuth[DbConnection::ERROR_INFO_CODE_INDEX],
-                $responseAuth[DbConnection::ERROR_INFO_MSG_INDEX]
-            ));
-            die(json_encode($this->response, JSON_UNESCAPED_UNICODE));
-        }
-        
-        return $token;
     }
 }

@@ -31,7 +31,8 @@ switch ($verb) {
         echo json_encode($class->putRequisition($postData), JSON_UNESCAPED_UNICODE);
         break;
     case "DELETE":
-
+        ApplicationSecurity::verifyUserToken($_GET["id"]);
+        echo json_encode($class->deleteRequisition($_GET["id"]), JSON_UNESCAPED_UNICODE);
         break;
     default:
         $response->setStatus(ResponseStatus::FAILED_STATUS);

@@ -30,5 +30,5 @@ abstract class App {
     /**
      * Timezone of application
      */
-    const DEFAULT_TIME_ZONE = "America/Sao_Paulo;
+    const DEFAULT_TIME_ZONE = "America/Sao_Paulo";
 }

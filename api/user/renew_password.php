@@ -1,6 +1,7 @@
 <?php
+
 /**
- * Call the logoff method in the controller of User
+ * Call the renew method password method of user
  * @author Cassiano Vellames <c.vellames@outlook.com>
  * @since 1.0.0
  */
@@ -12,6 +13,5 @@ Verifier::verifyRequisitionVerb("POST", $verb);
 $postData = json_decode(file_get_contents("php://input"), true);
 Verifier::checkInvalidJSON();
 
-ApplicationSecurity::verifyUserToken($postData["id"]);
 $userController = new UserController();
-echo json_encode($userController->logoff($postData["id"]), JSON_UNESCAPED_UNICODE);
+echo json_encode($userController->renewPassword($postData), JSON_UNESCAPED_UNICODE);

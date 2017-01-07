@@ -86,12 +86,12 @@ class AuthDAO extends DAO {
 
     /**
      * This method must delete an row in database
-     * @param int $id Id to delete
+     * @param int $id user_id to delete
      *
      * @return array Return an array with the result information
      */
     public function deleteById(int $id): array{
-        $sql = "DELETE FROM {$this->tableName} where id = ?";
+        $sql = "DELETE FROM {$this->tableName} where user_id = ?";
         $stmt = DbConnection::getInstance()->prepare($sql);
         $stmt->bindValue(1, $id, PDO::PARAM_INT);
         $stmt->execute();

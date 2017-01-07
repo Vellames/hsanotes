@@ -7,5 +7,10 @@
 
 include "../autoload.php";
 
+Verifier::verifyRequisitionVerb("POST", $verb);
+
+$postData = json_decode(file_get_contents("php://input"), true);
+Verifier::checkInvalidJSON();
+
 $userController = new UserController();
-echo json_encode($userController->forgotPassword($_GET["email"]), JSON_UNESCAPED_UNICODE);
+echo json_encode($userController->forgotPassword($postData), JSON_UNESCAPED_UNICODE);

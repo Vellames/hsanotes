@@ -8,8 +8,11 @@
 
 include "../autoload.php";
 
-$noteController = new NoteController();
+Verifier::verifyRequisitionVerb("GET", $verb);
+Verifier::verifyURLUserIdParam("user_id");
 ApplicationSecurity::verifyUserToken($_GET["user_id"]);
+
+$noteController = new NoteController();
 echo json_encode($noteController->selectNotesByUser(
     $_GET["user_id"],
     isset($_GET["order"]) ? $_GET["order"] : null, // Isset verification to avoid notice message

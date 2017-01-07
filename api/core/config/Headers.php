@@ -12,7 +12,7 @@ final class Headers {
      * Any headers must be inserted here
      */
     public static function getAllHeaders(){
-        //header('Content-Type: application/json');
+        header('Content-Type: application/json');
     }
     
 }

@@ -20,6 +20,12 @@ class NoteController extends Controller{
      * @return Response Response of requisition
      */
     public function getRequisition(int $id): Response {
+
+        // Verify params sent by the endpoint
+        $mandatoryFields = array("id", "user_id");
+        parent::verifyMandatoryFields($mandatoryFields, $_GET);
+
+        // Get the note of database
         $resultGet = NoteDAO::getInstance()->selectById($id);
 
         // Catch any errors in result
@@ -29,14 +35,18 @@ class NoteController extends Controller{
 
         // Verify if note exists
         if(!$resultGet[PDOSelectResult::RESULT_INDEX]){
-            $this->response->setStatus(ResponseStatus::FAILED_STATUS);
-            $this->response->setMessage("The note dont exists");
-            return $this->response;
+            return $this->noteNotExistsResponseReturn();
+        }
+
+        // Verify if the note is of the user
+        $originalNoteUserId = $resultGet[PDOSelectResult::RESULT_INDEX]["user_id"];
+        if($originalNoteUserId != $_GET["user_id"]){
+            return $this->noteOfOtherUserResponseReturn();
         }
 
         // Using the RESULT INDEX to recovery the data
-        $resultGet = $resultGet[PDOSelectResult::RESULT_INDEX];
         $userBean = new UserBean($_GET["user_id"]);
+        $resultGet = $resultGet[PDOSelectResult::RESULT_INDEX];
         $noteBean = new NoteBean(
             $resultGet["id"],
             $userBean,
@@ -46,6 +56,7 @@ class NoteController extends Controller{
             new DateTime($resultGet["modified"])
         );
 
+        // Renew the token
         $token = (new UserController)->renewAuthToken($userBean);
 
         $this->response->setStatus(ResponseStatus::SUCCEEDED_STATUS);
@@ -60,10 +71,22 @@ class NoteController extends Controller{
 
     /**
      * Add a new note in database
-     * @param array $postData Params sent by the endpoint
+      * @param array $postData Params sent by the endpoint
      * @return Response Return one response with the status of solicitation
      */
     public function postRequisition(array $postData): Response {
+
+        // Verify params sent by the endpoint
+        $mandatoryFields = array("user_id", "title", "description");
+        parent::verifyMandatoryFields($mandatoryFields, $postData);
+
+        // Verify description field
+        if(!$this->verifyDescriptionLength($postData["description"])){
+            http_response_code(400);
+            $this->response->setStatus(ResponseStatus::FAILED_STATUS);
+            $this->response->setMessage("The description must be 256 letters or less");
+            return $this->response;
+        }
 
         // Creating the necessary objects
         $userBean = new UserBean($postData["user_id"]);
@@ -107,6 +130,10 @@ class NoteController extends Controller{
      */
     public function putRequisition(array $putData): Response {
 
+        // Verify params sent by the endpoint
+        $mandatoryFields = array("id", "user_id", "title", "description");
+        parent::verifyMandatoryFields($mandatoryFields, $putData);
+
         //Get note from database
         $resultNote = NoteDAO::getInstance()->selectById($putData["id"]);
 
@@ -117,9 +144,13 @@ class NoteController extends Controller{
 
         // Verify if note exists
         if(!$resultNote[PDOSelectResult::RESULT_INDEX]){
-            $this->response->setStatus(ResponseStatus::FAILED_STATUS);
-            $this->response->setMessage("The note dont exists");
-            return $this->response;
+            return $this->noteNotExistsResponseReturn();
+        }
+
+        // Verify if the note is of the user (security level auth)
+        $originalNoteUserId = $resultNote[PDOSelectResult::RESULT_INDEX]["user_id"];
+        if($originalNoteUserId != $putData["user_id"]){
+            return $this->noteOfOtherUserResponseReturn();
         }
 
         // Create the necessary objects
@@ -162,6 +193,29 @@ class NoteController extends Controller{
      */
     public function deleteRequisition(int $id): Response {
 
+        // Verify params sent by the endpoint
+        $mandatoryFields = array("id", "user_id");
+        parent::verifyMandatoryFields($mandatoryFields, $_GET);
+
+        // Select the note to verify if the endpoint request is the owner of note
+        $resultNote = NoteDAO::getInstance()->selectById($id);
+
+        // Catch any errors in result
+        if(!$resultNote[PDOSelectResult::EXECUTED_INDEX]){
+            return PDOSelectResult::defaultSelectResultError($resultNote);
+        }
+
+        // Verify if note exists
+        if(!$resultNote[PDOSelectResult::RESULT_INDEX]){
+            return $this->noteNotExistsResponseReturn();
+        }
+
+        // Verify if the requester is the owner of the note
+        $originalUserIdNote = $resultNote[PDOSelectResult::RESULT_INDEX]["user_id"];
+        if($originalUserIdNote != $_GET["user_id"]){
+            return $this->noteOfOtherUserResponseReturn();
+        }
+
         // Delete the note
         $deleteResult = NoteDAO::getInstance()->deleteById($id);
 
@@ -193,6 +247,7 @@ class NoteController extends Controller{
      * @return Response Return the list of notes in a response object
      */
     public function selectNotesByUser(int $userId, string $order = null, string $orderType = null, int $page = null, int $registersByPage = null) : Response {
+
         $result = NoteDAO::getInstance()->selectNotesByUser($userId, $order, $orderType, $page, $registersByPage);
 
         // Catch any errors in result
@@ -228,6 +283,37 @@ class NoteController extends Controller{
             "token" => $token
         ));
 
+        return $this->response;
+    }
+
+    /**
+     * Verify if the description field has 256 letters or less
+     * @param string $description Description field
+     * @return bool Return if the description has 256 letters or less
+     */
+    private function verifyDescriptionLength(string $description) : bool {
+        return strlen($description) <= 256;
+    }
+
+    /**
+     * Standardize the return if the note not exits
+     * @return Response The Response object
+     */
+    private function noteNotExistsResponseReturn() : Response{
+        http_response_code(400);
+        $this->response->setStatus(ResponseStatus::FAILED_STATUS);
+        $this->response->setMessage("The note don't exists");
+        return $this->response;
+    }
+
+    /**
+     * Standardize the return if the user try do an action with a note of another user
+     * @return Response The response object
+     */
+    private function noteOfOtherUserResponseReturn() : Response {
+        http_response_code(401);
+        $this->response->setStatus(ResponseStatus::FAILED_STATUS);
+        $this->response->setMessage("You can't realize any actions with the note of another user.");
         return $this->response;
     }
 }

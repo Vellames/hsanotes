@@ -22,12 +22,14 @@ abstract class MailSenderConfig {
     /**
      * Username of account, usually the username is the same of email
      */
-    const USERNAME = "hsanotesrobot@outlook.com";
+    //const USERNAME = "hsanotesrobot@outlook.com";
+    const USERNAME = "c.vellames@outlook.com";
 
     /**
      * Password of account
      */
-    const PASSWORD = "Hs@notes123";
+    //const PASSWORD = "Hs@notes123";
+    const PASSWORD = "_cassiano1995@@";
 
     /**
      * SMTP port, usually 587

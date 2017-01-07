@@ -81,8 +81,18 @@ class UserDAO extends DAO {
         return $stmt->errorInfo();
     }
 
+    /**
+     * Delete an user
+     * @param int $id User to be deleted
+     * @return array Return a PDO erro info array
+     */
     public function deleteById(int $id): array{
+        $sql = "DELETE FROM {$this->tableName} where id = ?";
+        $stmt = DbConnection::getInstance()->prepare($sql);
+        $stmt->bindValue(1, $id, PDO::PARAM_INT);
+        $stmt->execute();
 
+        return $stmt->errorInfo();
     }
 
     /**
@@ -110,7 +120,7 @@ class UserDAO extends DAO {
      * @param string $email Email
      * @return int Id of user, if user not exists, return -1
      */
-    public function emailExists(string $email) : int {
+    public function getUserIdByEmail(string $email) : int {
         $sql = "SELECT id FROM {$this->tableName} where email = ?";
         $stmt = DbConnection::getInstance()->prepare($sql);
         $stmt->bindValue(1, $email, PDO::PARAM_STR);
@@ -174,5 +184,35 @@ class UserDAO extends DAO {
         }
 
         return true;
+    }
+
+    /**
+     * Update the password of user
+     * @param int $userId Id of user to update the password
+     * @param string $newPassword New password
+     * @return array PDO error info array
+     */
+    public function updatePassword(int $userId, string $newPassword) : array{
+        $sql = "UPDATE {$this->tableName} SET password = ? where id = ?";
+        $stmt = DbConnection::getInstance()->prepare($sql);
+        $stmt->bindValue(1, ApplicationSecurity::generatePasswordHash($newPassword), PDO::PARAM_STR);
+        $stmt->bindValue(2, $userId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->errorInfo();
+    }
+
+    /**
+     * Change the expiration date of the expiration field of recovery password
+     * @param int $userId User id
+     * @return array PDO error info array
+     */
+    public function invalidatePasswordRecoveryHash(int $userId) : array{
+        $sql = "UPDATE {$this->tableName} SET password_recovery_expiration = '1970-01-01 00:00:00' where id = ?";
+        $stmt = DbConnection::getInstance()->prepare($sql);
+        $stmt->bindValue(1, $userId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->errorInfo();
     }
 }

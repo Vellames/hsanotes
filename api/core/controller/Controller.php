@@ -54,4 +54,20 @@ abstract class Controller{
      */
     public abstract function deleteRequisition(int $id) : Response;
 
+    /**
+     * Verify if all basic params necessary are in endpoint data sent, if any field is missing
+     * Show an Response to the endpoint with the missing field
+     * @param array $fields Mandatory fields in the endpoint parma
+     * @param array $endpointParam Endpoint params array
+     */
+    protected function verifyMandatoryFields(array $fields, array $endpointParam){
+        foreach($fields as $field){
+            if(!isset($endpointParam[$field])){
+                http_response_code(400);
+                $this->response->setStatus(ResponseStatus::FAILED_STATUS);
+                $this->response->setMessage("Missing '{$field}' param");
+                die(json_encode($this->response, JSON_UNESCAPED_UNICODE));
+            }
+        }
+    }
 }

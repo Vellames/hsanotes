@@ -21,6 +21,10 @@ class UserController extends Controller {
      */
     public function getRequisition(int $id): Response{
 
+        // Verify params sent by the endpoint
+        $mandatoryFields = array("id");
+        parent::verifyMandatoryFields($mandatoryFields, $_GET);
+
         // Recovery the data of database
         $resultUser = UserDAO::getInstance()->selectById($id);
         
@@ -67,6 +71,10 @@ class UserController extends Controller {
      * @return Response Object with the Response information
      */
     public function postRequisition(array $postData): Response{
+
+        // Verify params sent by the endpoint
+        $mandatoryFields = array("email", "password", "name");
+        parent::verifyMandatoryFields($mandatoryFields, $postData);
 
         // Verify if user email is valid
         if(!$this->verifyUserEmail($postData["email"])){
@@ -140,9 +148,13 @@ class UserController extends Controller {
      * The put requisition edit an user in database
      * The field "Modified" is generated in the method
      * @param array $putData Data sended from the endpoint
-     * @return \Response
+     * @return Response Object with the Response information
      */
     public function putRequisition(array $putData): Response {
+
+        // Verify params sent by the endpoint
+        $mandatoryFields = array("email", "password", "name", "id");
+        parent::verifyMandatoryFields($mandatoryFields, $putData);
 
         // Verify if user email is valid
         if(!$this->verifyUserEmail($putData["email"])){
@@ -171,7 +183,7 @@ class UserController extends Controller {
         // Verify if user exists
         if(!$resultUser[PDOSelectResult::RESULT_INDEX]){
             $this->response->setStatus(ResponseStatus::FAILED_STATUS);
-            $this->response->setMessage("The user dont exists");
+            $this->response->setMessage("The user don't exists");
             return $this->response;
         }
         
@@ -185,8 +197,6 @@ class UserController extends Controller {
         );
         
         $returnPut = UserDAO::getInstance()->update($userBean);
-        
-        // If user arent inserted, rollback the transcation
         if($returnPut[DbConnection::ERROR_INFO_CODE_INDEX] != DbConnection::PDO_SUCCESS_RETURN){
             return PDOErrorInfo::defaultDMLResultError($returnPut);
         }
@@ -205,7 +215,43 @@ class UserController extends Controller {
         return $this->response;
     }
 
+    /**
+     * Delete an user of database
+     * @param int $id Id of user to be deleted
+     * @return Response
+     */
     public function deleteRequisition(int $id): Response {
+
+        // Starts the transaction
+        DbConnection::getInstance()->beginTransaction();
+
+        // Delete the notes of user
+        $resultDeleteNotes = NoteDAO::getInstance()->deleteByUserId($id);
+        if($resultDeleteNotes[DbConnection::ERROR_INFO_CODE_INDEX] != DbConnection::PDO_SUCCESS_RETURN){
+            DbConnection::getInstance()->rollBack();
+            return PDOErrorInfo::defaultDMLResultError($resultDeleteNotes);
+        }
+
+        // Delete the auth register of user
+        $resultDeleteAuth = AuthDAO::getInstance()->deleteById($id);
+        if($resultDeleteAuth[DbConnection::ERROR_INFO_CODE_INDEX] != DbConnection::PDO_SUCCESS_RETURN){
+            DbConnection::getInstance()->rollBack();
+            return PDOErrorInfo::defaultDMLResultError($resultDeleteAuth);
+        }
+
+        // Delete the user
+        $resultDeleteUser = UserDAO::getInstance()->deleteById($id);
+        if($resultDeleteUser[DbConnection::ERROR_INFO_CODE_INDEX] != DbConnection::PDO_SUCCESS_RETURN){
+            DbConnection::getInstance()->rollBack();
+            return PDOErrorInfo::defaultDMLResultError($resultDeleteUser);
+        }
+
+        // Commit the transaction
+        DbConnection::getInstance()->commit();
+
+        // If its all ok, send the response
+        $this->response->setStatus(ResponseStatus::SUCCEEDED_STATUS);
+        $this->response->setMessage("User deleted with success");
         return $this->response;
     }
 
@@ -215,6 +261,11 @@ class UserController extends Controller {
      * @return Response Return the response object. If login are realized with success, return the user in response->data
      */
     public function login(array $endPointParams) : Response{
+
+        // Verify params sent by the endpoint
+        $mandatoryFields = array("email", "password");
+        parent::verifyMandatoryFields($mandatoryFields, $endPointParams);
+
         $returnLogin = UserDAO::getInstance()->login($endPointParams["email"], $endPointParams["password"]);
 
         // If errorCode exists in the return login is because an error occurred
@@ -228,7 +279,7 @@ class UserController extends Controller {
         // If return is empty, the login and/or password are wrong
         if(empty($returnLogin)){
             $this->response->setStatus(ResponseStatus::FAILED_STATUS);
-            $this->response->setMessage("Email and/or password incorrect");
+            $this->response->setMessage("Email or password incorrect");
             return $this->response;
         }
 
@@ -309,13 +360,19 @@ class UserController extends Controller {
 
     /**
      * Send an email to the recipient
-     * @param string $email Email to send the message
+     * @param array $postData Email to send the message
      * @return Response Return the response data
      */
-    public function forgotPassword(string $email) : Response{
+    public function forgotPassword(array $postData) : Response{
+
+        // Verify params sent by the endpoint
+        $mandatoryFields = array("email");
+        parent::verifyMandatoryFields($mandatoryFields, $postData);
+
+        $email = $postData["email"];
 
         // Verify if email exists in database
-        $userId = UserDAO::getInstance()->emailExists($email);
+        $userId = UserDAO::getInstance()->getUserIdByEmail($email);
         if($userId === -1){
             $this->response->setStatus(ResponseStatus::FAILED_STATUS);
             $this->response->setMessage("This email not exist in database");
@@ -340,7 +397,7 @@ class UserController extends Controller {
         // Send mail
         if(MailSender::getInstance()->sendEmail(array($email), $emailSubject, $emailBody)) {
             $this->response->setStatus(ResponseStatus::SUCCEEDED_STATUS);
-            $this->response->setMessage("An email has been sent to you with an activation code. Please verify your mailbox");
+            $this->response->setMessage("An email has been sent to you with a recovery code. Please verify your mailbox");
         } else {
             http_response_code(500);
             $this->response->setStatus(ResponseStatus::FAILED_STATUS);
@@ -351,25 +408,64 @@ class UserController extends Controller {
     }
 
     /**
-     * @param string $password
-     * @param string $hash
-     * @param string $email
-     * @return Response
+     * Update the password of user if the hash sent matches with the hash in database
+     * @param array $postData Data sent by endpoint
+     * @return Response Return the response data
      */
-    public function renewPassword(string $password, string $hash, string $email) : Response{
-        $result = UserDAO::getInstance()->checkPasswordRecoveryHash($email, $hash);
+    public function renewPassword(array $postData) : Response{
 
+        // Verify params sent by the endpoint
+        $mandatoryFields = array("email", "hash", "password");
+        parent::verifyMandatoryFields($mandatoryFields, $postData);
+
+        $password = $postData["password"];
+        $hash = $postData["hash"];
+        $email = $postData["email"];
+
+        $result = UserDAO::getInstance()->checkPasswordRecoveryHash($email, $hash);
         // If an array is returned, It is because an PDO error occurred
         if(is_array($result)){
             return PDOSelectResult::defaultSelectResultError($result);
         }
 
+        // If a string is returned, Its because a business rule validation occurred
         if(is_string($result)){
             $this->response->setStatus(ResponseStatus::FAILED_STATUS);
             $this->response->setMessage($result);
+            return $this->response;
         }
 
-        //TODO: Continue
+        // Recovery the userId with the email
+        $userId = UserDAO::getInstance()->getUserIdByEmail($email);
+
+        // Verify if user password is valid
+        if(!$this->verifyUserPassword($password)) {
+            http_response_code(400);
+            $this->response->setStatus(ResponseStatus::FAILED_STATUS);
+            $this->response->setMessage("The password must be at least 6 letters");
+            return $this->response;
+        }
+
+        // Begin a transaction to update the password and invalidate the recovery hash
+        DbConnection::getInstance()->beginTransaction();
+
+        $resultChangePassword = UserDAO::getInstance()->updatePassword($userId, $password);
+        if($resultChangePassword[DbConnection::ERROR_INFO_CODE_INDEX] != DbConnection::PDO_SUCCESS_RETURN){
+            DbConnection::getInstance()->rollBack();
+            return PDOErrorInfo::defaultDMLResultError($resultChangePassword);
+        }
+
+        $resultInvalidateRecoveryHash = UserDAO::getInstance()->invalidatePasswordRecoveryHash($userId);
+        if($resultInvalidateRecoveryHash[DbConnection::ERROR_INFO_CODE_INDEX] != DbConnection::PDO_SUCCESS_RETURN){
+            DbConnection::getInstance()->rollBack();
+            return PDOErrorInfo::defaultDMLResultError($resultInvalidateRecoveryHash);
+        }
+
+        // If all its ok, send the response
+        DbConnection::getInstance()->commit();
+        $this->response->setStatus(ResponseStatus::SUCCEEDED_STATUS);
+        $this->response->setMessage("Password changed with success");
+        return $this->response;
     }
 
     /**

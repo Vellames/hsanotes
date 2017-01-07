@@ -26,7 +26,7 @@ class ApplicationSecurity{
      * @param int $userId Id of user
      * @return string Return the hash
      */
-    public static function generateAuthHash(int $userId) : string {
+    public static function generateAuthHash(int $userId) {
         return sha1("DGS23%@#@#00" . time() . $userId . "FDSDSG23523@#%#@236b");
     }
 
@@ -44,7 +44,7 @@ class ApplicationSecurity{
      * @param int $userId id of user
      */
     public static function verifyUserToken(int $userId){
-        
+
         $response = new Response();
         
         // Verify if Authorization Header exists
@@ -70,7 +70,7 @@ class ApplicationSecurity{
         if(!$resultAuth[PDOSelectResult::RESULT_INDEX]){
             http_response_code(401);
             $response->setStatus(ResponseStatus::FAILED_STATUS);
-            $response->setMessage("Invalid Authorization code");
+            $response->setMessage("Invalid Authorization code or user not exists");
             $response->setData(PDOErrorInfo::returnError(
                 $resultAuth[PDOSelectResult::RESULT_INDEX][DbConnection::ERROR_INFO_CODE_INDEX],
                 $resultAuth[PDOSelectResult::RESULT_INDEX][DbConnection::ERROR_INFO_MSG_INDEX]
@@ -78,7 +78,7 @@ class ApplicationSecurity{
             die(json_encode($response, JSON_UNESCAPED_UNICODE));
         }
         
-        // Verify if the authorization sended by endpoint its the same as the code in database
+        // Verify if the authorization sent by endpoint its the same as the code in database
         if($authorization != $resultAuth[PDOSelectResult::RESULT_INDEX]["code"]){
             http_response_code(401);
             $response->setStatus(ResponseStatus::FAILED_STATUS);
@@ -96,7 +96,6 @@ class ApplicationSecurity{
             $response->setMessage("Expired Authorization code");
             die(json_encode($response, JSON_UNESCAPED_UNICODE));
         }
-
     }
 
 }

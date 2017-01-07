@@ -144,4 +144,18 @@ class NoteDAO extends DAO {
 
         return $stmt->errorInfo();
     }
+
+    /**
+     * Delete all the notes of an user
+     * @param int $userId Id of user
+     * @return array Return an PDO error info array
+     */
+    public function deleteByUserId(int $userId) : array {
+        $sql = "DELETE FROM {$this->tableName} where user_id = ?";
+        $stmt = DbConnection::getInstance()->prepare($sql);
+        $stmt->bindValue(1, $userId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->errorInfo();
+    }
 }

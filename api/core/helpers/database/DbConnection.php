@@ -25,17 +25,6 @@ class DbConnection {
     private function __construct(){}
 
     /**
-     * @var array Database configuration
-     */
-    private static $config = [
-        "sgdb" => "mysql",
-        "host" => "localhost",
-        "databaseName" => "mydb",
-        "user" => "root",
-        "password" => "root"
-    ];
-
-    /**
      * @return DbConnection|PDO Singleton implementation
      */
     public static function getInstance(){
@@ -50,11 +39,11 @@ class DbConnection {
      */
     private static function newInstance(){
         try {
-            $db = new PDO(self::$config["sgdb"].
-                ':host=' . self::$config["host"] .
-                ';dbname='.self::$config["databaseName"],
-                self::$config["user"],
-                self::$config["password"]);
+            $db = new PDO(DatabaseConfig::SGDB.
+                ':host=' . DatabaseConfig::HOST .
+                ';dbname='.DatabaseConfig::DATABASE_NAME,
+                DatabaseConfig::USER,
+                DatabaseConfig::PASSWORD);
 
             // Forcing UTF8 encoding
             $db->exec("set names utf8");

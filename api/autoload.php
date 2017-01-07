@@ -18,6 +18,7 @@ function autoload($class_name) {
         'core'. DIRECTORY_SEPARATOR . 'helpers' . DIRECTORY_SEPARATOR . "security",
         'core'. DIRECTORY_SEPARATOR . 'helpers' . DIRECTORY_SEPARATOR . "response",
         'core'. DIRECTORY_SEPARATOR . 'helpers' . DIRECTORY_SEPARATOR . "mail",
+        'core'. DIRECTORY_SEPARATOR . 'helpers' . DIRECTORY_SEPARATOR . "requisition"
     );
 
     foreach($array_paths as $path){
@@ -37,3 +38,9 @@ date_default_timezone_set("America/Bahia");
 
 // Setting all necessary headers
 Headers::getAllHeaders();
+
+// Creating response object
+$response = new Response();
+
+// Verb variable
+$verb = strtoupper($_SERVER['REQUEST_METHOD']);

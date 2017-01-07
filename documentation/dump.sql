@@ -73,7 +73,7 @@ LOCK TABLES `note` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `user`
+--  Table structure for table `user`
 --
 
 DROP TABLE IF EXISTS `user`;

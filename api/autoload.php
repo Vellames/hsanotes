@@ -30,8 +30,8 @@ function autoload($className) {
 }
 spl_autoload_register('autoload');
 
-// PHPMailer Autoload
-include 'core/libs/mail/PHPMailerAutoload.php';
+// Composer AutoLoad
+include "vendor/autoload.php";
 
 // Set the server default time zone
 date_default_timezone_set(App::DEFAULT_TIME_ZONE);
@@ -43,4 +43,4 @@ Headers::getAllHeaders();
 $response = new Response();
 
 // Verb variable
-$verb = strtoupper($_SERVER['REQUEST_METHOD']);
+$verb = isset($_SERVER['REQUEST_METHOD']) ? strtoupper($_SERVER['REQUEST_METHOD']) : null;

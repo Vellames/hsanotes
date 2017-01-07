@@ -15,20 +15,20 @@ abstract class DatabaseConfig{
     /**
      * Server of connection
      */
-    const HOST = "localhost";
+    const HOST = "mysql.hostinger.com.br";
 
     /**
      * Name of database to connect
      */
-    const DATABASE_NAME = "mydb";
+    const DATABASE_NAME = "u274649875_hsa";
 
     /**
      * User to connect in database
      */
-    const USER = "root";
+    const USER = "u274649875_hsa";
 
     /**
      * Password of user to connect in database
      */
-    const PASSWORD = "root";
+    const PASSWORD = "hs@notes123";
 }

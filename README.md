@@ -2,6 +2,8 @@
 Simple Notes API
 
 To execute the API Project is necessary the use of composer<br>
+You can download and install composer in this link: https://getcomposer.org/
+
 Run this command in the API folder to download all project dependencies:
 
 ````
@@ -21,6 +23,13 @@ Check this link: http://www.hsanotes.esy.es/docs/
 # Consuming the API
 
 Check this link to view how to consume the HSA Notes API: http://www.hsanotes.esy.es/
+
+# Testing the API
+
+To test the unit tests of API. Run the following commands in the api folder:
+
+
+
 
 
 Developer by: Cassiano Vellames <c.vellames@outlook.com>

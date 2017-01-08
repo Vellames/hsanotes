@@ -1,6 +1,25 @@
 # HSA Notes
 Simple Notes API
 
-Check the documentation in this link:
+To execute the API Project is necessary the use of composer<br>
+Run this command in the API folder to download all project dependencies:
 
-Developer by: Cassiano Vellames
+````
+php composer.phar install
+````
+
+It's necessary pre-install three php extensions before run the composer command:
+
+php-xml (For phpunit)<br>
+php-intl (For phpdocs)<br>
+php-mbstring (For phpmailer)<br>
+
+# Class Documentation
+
+# Consuming the API
+
+Check this link to view how to consume the HSA Notes APi
+
+
+
+Developer by: Cassiano Vellames <c.vellames@outlook.com>

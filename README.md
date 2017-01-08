@@ -28,6 +28,9 @@ Check this link to view how to consume the HSA Notes API: http://www.hsanotes.es
 
 To test the unit tests of API. Run the following commands in the api folder:
 
+./vendor/bin/phpunit tests/UserBeanTest.php --colors
+./vendor/bin/phpunit tests/AuthBeanTest.php --colors
+./vendor/bin/phpunit tests/NoteBeanTest.php --colors
 
 
 

@@ -10,6 +10,7 @@
   "require": {
     "php": ">=7.0.0",
     "phpunit/phpunit": "5.7.0",
-    "phpmailer/phpmailer": "5.2.*"
+    "phpmailer/phpmailer": "5.2.*",
+    "phpdocumentor/phpdocumentor" : "2.*"
   }
 }

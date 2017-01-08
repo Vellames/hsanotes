@@ -317,3 +317,4 @@ class NoteController extends Controller{
         return $this->response;
     }
 }
+

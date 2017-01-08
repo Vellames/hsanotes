@@ -206,7 +206,7 @@ class UserController extends Controller {
         
         // Returning the info
         $this->response->setStatus(ResponseStatus::SUCCEEDED_STATUS);
-        $this->response->setMessage("User edited with success");
+        $this->response->setMessage("User eddited with success");
         $this->response->setData(array(
             "user" => $userBean,
             "token" => $returnRenewAuth
@@ -401,7 +401,7 @@ class UserController extends Controller {
         } else {
             http_response_code(500);
             $this->response->setStatus(ResponseStatus::FAILED_STATUS);
-            $this->response->setMessage("An error has occurred when we tried send your email.");
+            $this->response->setMessage("An error has occurred when we tried sent your email.");
         }
 
         return $this->response;

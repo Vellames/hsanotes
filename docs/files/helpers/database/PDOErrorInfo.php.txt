@@ -1,0 +1,41 @@
+<?php
+
+/**
+ * This class is used to return a error in transaction
+ * @author Cassiano Vellames <c.vellames@outlook.com>
+ * @since 1.0.0
+ */
+abstract class PDOErrorInfo{
+
+    /**
+     * This method is used to standardize the return error by PDO transaction
+     * @param $errorCode PDO error code
+     * @param $errorDescription PDO error description
+     * @return array Return a standardize array with the error description
+     */
+    public static function returnError($errorCode, $errorDescription) : array{
+        http_response_code(500);
+        return [
+            "errorCode" => $errorCode,
+            "errorDescription" => $errorDescription
+        ];
+    }
+
+    /**
+     * This method is used to standardize a dml error
+     * @param array $result PDO error info array
+     * @return Response Return a standardize array with the error description
+     */
+    public static function defaultDMLResultError(array $result) : Response{
+        http_response_code(500);
+        $response = new Response();
+        $response->setStatus(ResponseStatus::FAILED_STATUS);
+        $response->setMessage("Error in DML command");
+        $response->setData(PDOErrorInfo::returnError(
+            $result[DbConnection::ERROR_INFO_CODE_INDEX],
+            $result[DbConnection::ERROR_INFO_MSG_INDEX]
+        ));
+        return $response;
+    }
+
+}

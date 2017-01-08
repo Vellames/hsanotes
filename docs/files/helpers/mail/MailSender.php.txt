@@ -1,0 +1,71 @@
+<?php
+
+/**
+ * This class is responsible to send all necessary emails.
+ * @author Cassiano Vellames <c.vellames@outlook.com>
+ * @since 1.0.0
+ */
+class MailSender {
+
+    /**
+     * @var MailSender Instance of MailSender
+     */
+    private static $instance;
+
+    /**
+     * Singleton constructor
+     */
+    private function __construct(){}
+
+    /**
+     * @return MailSender Return a MailSender instance
+     */
+    public static function getInstance(){
+        if(!isset(self::$instance)){
+            self::$instance = new MailSender();
+        }
+        return self::$instance;
+    }
+
+    /**
+     * Send an email to all recipients
+     * @param array $recipients Recipients of email
+     * @param string $subject Subject of message
+     * @param string $body Content of message
+     * @return bool Return if email has been sent
+     */
+    public function sendEmail(array $recipients, string $subject, string $body) : bool {
+
+        // Get an instance of PHPMailer with the basics configurations
+        $mail = $this->getMailSenderConfigurated();
+
+        foreach($recipients as $recipient){
+            $mail->addAddress($recipient);
+        }
+
+        $mail->Subject = $subject;
+        $mail->Body = $body;
+
+        return $mail->send();
+    }
+
+    /**
+     * @return PHPMailer Return an PHPMailer with the MailSenderConfig params
+     */
+    private function getMailSenderConfigurated() : PHPMailer{
+        $mail = new PHPMailer;
+        $mail->isSMTP();
+        $mail->Host = MailSenderConfig::HOST;
+        $mail->SMTPAuth = MailSenderConfig::AUTH;
+        $mail->Username = MailSenderConfig::USERNAME;
+        $mail->Password = MailSenderConfig::PASSWORD;
+        $mail->Port = MailSenderConfig::PORT;
+
+        $mail->setFrom(MailSenderConfig::EMAIL, MailSenderConfig::NAME);
+        $mail->isHTML(true);
+        $mail->AltBody = MailSenderConfig::ALT_BODY;
+
+        return $mail;
+    }
+
+}

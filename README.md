@@ -16,10 +16,11 @@ php-mbstring (For phpmailer)<br>
 
 # Class Documentation
 
+Check this link: http://www.hsanotes.esy.es/docs/
+
 # Consuming the API
 
-Check this link to view how to consume the HSA Notes APi
-
+Check this link to view how to consume the HSA Notes API: http://www.hsanotes.esy.es/
 
 
 Developer by: Cassiano Vellames <c.vellames@outlook.com>
